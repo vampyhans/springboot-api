@@ -5,7 +5,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import saberion_java_project.hansa_java_project.dto.UserLoginDto;
@@ -51,25 +50,12 @@ public class UserService {
     }
 
 
-public String loginUser(UserLoginDto loginDto) {
-    try {
-        // Authenticate the user
-        Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(
-                loginDto.getEmail(),
-                loginDto.getPassword()
-            )
-        );
-
-        // Set authentication in the security context
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        // Generate JWT token
-        String token = jwtUtil.generateToken(authentication.getName());
-        return token;
-    } catch (BadCredentialsException e) {
-        throw new BadCredentialsException("Invalid email or password.");
+    public String loginUser(UserLoginDto loginDto) {
+        Optional<User> user = userRepository.findByEmail(loginDto.getEmail());
+        if (user.isPresent() && passwordEncoder.matches(loginDto.getPassword(), user.get().getPassword())) {
+            return jwtUtil.generateToken(user.get().getEmail());
+        } else {
+            throw new BadCredentialsException("Invalid credentials.");
+        }
     }
-}
-
 }
