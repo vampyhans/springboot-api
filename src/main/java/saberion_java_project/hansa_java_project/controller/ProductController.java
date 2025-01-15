@@ -41,6 +41,7 @@ public class ProductController {
     @GetMapping
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')") // Both roles can view products
     public ResponseEntity<List<Product>> getAllProducts() {
+        System.out.println("Register API hit with data: " + userDto);
         List<Product> products = productService.findAllProducts();
         return ResponseEntity.ok(products);
     }
